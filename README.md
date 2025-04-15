@@ -1,1 +1,8 @@
 ![](letmecook.png)
+
+TODO:
+
+- UPNP
+- CIPHER (ML-KEM & CHACHA20)
+- ELECTRON BUILD
+- .ENV PORTS, AES KEY

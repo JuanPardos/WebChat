@@ -1,13 +1,15 @@
 @import './base.css';
 
 #app {
-  width: 100%;
+  width: 100vw;
+  height: 100vh;
   margin: 0;
-  padding: 2rem;
+  padding: 0;
   font-weight: normal;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
+  justify-content: stretch;
+  align-items: stretch;
 }
 
 a,
@@ -25,15 +27,11 @@ a,
 }
 
 @media (min-width: 1024px) {
-  body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
   #app {
     display: flex;
     flex-direction: column;
     padding: 0;
+    width: 100vw;
+    height: 100vh;
   }
 }

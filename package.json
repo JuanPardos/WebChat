@@ -4,13 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev:linux": "nohup node server-manager.js & vite --host",
+    "dev:win": "start /b node server-manager.js && vite --host",
     "build": "vite build",
     "preview": "vite preview",
     "format": "prettier --write src/"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.4",
+    "crypto-js": "^4.2.0",
+    "express": "^5.1.0",
     "tailwindcss": "^4.1.4",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",

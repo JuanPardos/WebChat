@@ -1,6 +1,8 @@
 import { WebSocketServer } from 'ws'
 
-const server = new WebSocketServer({ port: 8080 })
+const port = process.argv[2] ? parseInt(process.argv[2], 10) : 8080
+
+const server = new WebSocketServer({ port })
 
 let clients = []
 
@@ -16,6 +18,5 @@ server.on('connection', (ws) => {
   ws.on('close', () => {
     clients = clients.filter((client) => client !== ws)
   })
-  ws.send('Connection established')
 })
-console.log('Listening on ws://localhost:8080')
+console.log(`Listening on ws://localhost:${port}`)

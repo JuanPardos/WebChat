@@ -1,8 +1,13 @@
 <script setup>
 import { ref } from 'vue';
-import { RouterLink } from 'vue-router';
+import { RouterLink, useRouter } from 'vue-router';
+import CryptoJS from 'crypto-js';
 
 let render = ref("mainMenu");
+let port = ref('');
+let joinLobbyId = ref('');
+const AES_KEY = 'b7e4c2a1d3f8e9b0';
+const router = useRouter();
 
 function renderMainMenu() {
   render.value = "mainMenu";
@@ -15,6 +20,41 @@ function renderHostLobby() {
 function renderJoinLobby() {
   render.value = "joinLobby";
 }
+
+async function hostLobby() {
+  const response = await fetch('http://localhost:3001/start-server', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ port: port.value })
+  });
+  if (!response.ok) {
+    alert('WebSocket server could not be started.');
+    return;
+  }
+  let ip = await getLocalIP();
+  if (!ip) {
+    alert('Could not get local IP address.');
+    return;
+  }
+  const data = `${ip}:${port.value}`;
+  const encrypted = CryptoJS.AES.encrypt(data, AES_KEY).toString();
+  router.push({ name: 'chat', query: { lobbyId: encrypted } });
+}
+
+function joinLobby() {
+  if (!joinLobbyId.value) {
+    alert('Please enter a valid lobby ID.');
+    return;
+  }
+  router.push({ name: 'chat', query: { lobbyId: joinLobbyId.value } });
+}
+
+function getLocalIP() {
+  return fetch('https://api.ipify.org?format=json')
+    .then(response => response.json())
+    .then(data => data.ip)
+    .catch(() => 'localhost');
+}
 </script>
 
 <template>
@@ -25,45 +65,48 @@ function renderJoinLobby() {
         <h1 class="text-2xl font-bold text-center text-green-500">Main Menu</h1>
         <div class="text-center mt-4">
           <br />
-          <button @click="renderHostLobby()" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-            Host a Lobby
+          <button @click="renderHostLobby()" class="custom-btn">
+            Host Lobby
           </button>
-          <button @click="renderJoinLobby()" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
-            Join a Lobby
+          <button @click="renderJoinLobby()" class="custom-btn">
+            Join Lobby
           </button>
         </div>
       </div>
       <div v-else-if="render === 'hostLobby'" class="grid grid-cols-3 col-span-2">
         <div class="col-span-3">
-          <h1 class="text-2xl font-bold text-center text-green-500">Host a Lobby</h1>
+          <h1 class="text-2xl font-bold text-center text-green-500">Host Lobby</h1>
           <p class="text-center mt-4">Don't forget to open the port in the gateway !</p>
         </div>
         <div class="col-span-2">
           <p class="text-center mt-4">Port number to listen:</p>
         </div>
         <div>
-          <input type="text" placeholder="8080" class="border border-gray-300 rounded p-2 mt-4" />
+          <input v-model="port" type="text" placeholder="8080" class="border border-gray-300 rounded p-2 mt-4" />
         </div>
         <div class="col-span-3 text-center mt-4">
-          <button @click="renderMainMenu()" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+          <button @click="renderMainMenu()" class="custom-btn">
             Back
           </button>
-          <button @click="hostLobby()" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+          <button @click="hostLobby()" class="custom-btn">
             Continue
           </button>
         </div>
       </div>
-      <div v-else-if="render === 'joinLobby'" class="col-span-2">
-        <h1 class="text-2xl font-bold text-center text-green-500">Join a Lobby</h1>
-        <div class="grid grid-cols-3 items-center col-span-3">
-          <p class="text-center mt-4 col-span-2">Paste the lobby id</p>
-          <input type="text" placeholder="Lobby ID" class="border border-gray-300 rounded p-2 mt-4" />
+      <div v-else-if="render === 'joinLobby'" class="grid grid-cols-4 col-span-2">
+        <div class="col-span-4">
+          <h1 class="text-2xl font-bold text-center text-green-500">Join Lobby</h1>
         </div>
-        <div class="col-span-3 text-center mt-4">
-          <button @click="renderMainMenu()" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+        <div class="grid grid-cols-3 items-center col-span-4 mt-5">
+          <p class="text-center mt-4 col-span-1 mr-2">Paste the lobby id</p>
+          <input v-model="joinLobbyId" type="text" placeholder="Lobby ID"
+            class="border border-gray-300 rounded mt-4 col-span-2" />
+        </div>
+        <div class="col-span-4 text-center mt-4">
+          <button @click="renderMainMenu()" class="custom-btn">
             Back
           </button>
-          <button @click="joinLobby()" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600">
+          <button @click="joinLobby()" class="custom-btn">
             Continue
           </button>
         </div>
@@ -109,8 +152,9 @@ button {
 
 p {
   font-size: 20px;
-  color: #333;
+  color: var(--color-text);
   text-align: center;
+  margin-right: 2rem;
 }
 
 footer {
@@ -118,5 +162,21 @@ footer {
   position: fixed;
   bottom: 0;
   left: 0;
+}
+
+.custom-btn {
+  background-color: #22c55e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  margin: 10px;
+  font-size: 16px;
+  border: solid 1px black;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.custom-btn:hover {
+  background-color: #16a34a;
 }
 </style>
